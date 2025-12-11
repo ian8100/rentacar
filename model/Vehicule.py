@@ -19,6 +19,17 @@ class Voiture(Vehicule):
 
         self.nbrPortes:int = nbrPortes
         self.motorisation:str = motorisation
+    
+    def get_description(self):
+        return self.nbrPortes, self.couleur
+    
+    def set_model(self,nouvModel):
+        self.modele = nouvModel
+
+    def ageIsOk(self,ageUtilisateur):
+        return ageUtilisateur >= self.AGE_MINI
+
+
 
 class Moto(Vehicule):
     AGE_MINI = 18
@@ -28,6 +39,9 @@ class Moto(Vehicule):
 
         self.motorisation:str = motorisation
         self.cylindre:int = cylindre
+
+    def ageIsOk(self,ageUtilisateur):
+        return ageUtilisateur >= self.AGE_MINI
 
 class Camion(Vehicule):
     AGE_MINI = 21
@@ -39,10 +53,15 @@ class Camion(Vehicule):
         self.motorisation:str = motorisation
         self.remorque:bool = remorque
 
+    def ageIsOk(self,ageUtilisateur):
+        return ageUtilisateur >= self.AGE_MINI
 
+if __name__ == '__main__':
 
+    voiture1 = Voiture("dacia",52,"sandero","SUV","bon",25.5,"rouge",5,"électrique")
+    print(voiture1.get_description())
 
-
-voiture1 = Voiture('bleu','dacia',2016)
-
-
+    if (voiture1.ageIsOk(19)):
+        print("age ok")
+    else:
+        print("trop jeune")
