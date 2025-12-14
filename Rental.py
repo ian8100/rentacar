@@ -110,4 +110,8 @@ class Rental:
     
     def __repr__(self):
         return (f"Rental({self.rental_id}, customer={self.customer.customer_id}, "
+<<<<<<< HEAD
                 f"vehicle={self.vehicle.vehicle_id}, status={self.status})")
+=======
+                f"vehicle={self.vehicle.vehicle_id}, status={self.status})")
+>>>>>>> f198589ef84f82d7c049cc6e30791f77e973f22b
