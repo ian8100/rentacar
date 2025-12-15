@@ -109,9 +109,4 @@ class Rental:
                 f"${self.total_cost:.2f} - Status: {self.status}")
     
     def __repr__(self):
-        return (f"Rental({self.rental_id}, customer={self.customer.customer_id}, "
-<<<<<<< HEAD
-                f"vehicle={self.vehicle.vehicle_id}, status={self.status})")
-=======
-                f"vehicle={self.vehicle.vehicle_id}, status={self.status})")
->>>>>>> f198589ef84f82d7c049cc6e30791f77e973f22b
+        return (f"Rental({self.rental_id}, customer={self.customer.customer_id}, "f"vehicle={self.vehicle.vehicle_id}, status={self.status})")

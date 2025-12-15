@@ -376,8 +376,4 @@ class TestCarRentalSystem(unittest.TestCase):
         self.assertAlmostEqual(report['base_revenue'], base_revenue)
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     unittest.main()
-=======
-    unittest.main()
->>>>>>> f198589ef84f82d7c049cc6e30791f77e973f22b
