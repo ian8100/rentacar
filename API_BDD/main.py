@@ -15,9 +15,9 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List
 
-from . import model
-from . import schema
-from .database import engine, get_db
+import model
+import schemas as schema
+from database import engine, get_db
 from Classes.Vehicule import Vehicule 
 
 model.Base.metadata.create_all(bind=engine)
@@ -145,8 +145,8 @@ def create_rental(rental: schema.RentalCreate, db: Session = Depends(get_db)):
     Returns:
         DBRental: L'objet location créé avec le statut 'active'.
     """
-    vehicle = db.query(model.DBVehicle).filter(model.DBVehicle.id == rental.vehicle_id).first()
-    customer = db.query(model.DBCustomer).filter(model.DBCustomer.id == rental.customer_id).first()
+    vehicle = db.query(model.DBVehicle).filter(model.DBVehicle.vehicle_id == rental.vehicle_id).first()
+    customer = db.query(model.DBCustomer).filter(model.DBCustomer.customer_id == rental.customer_id).first()
     
     if not vehicle:
         raise HTTPException(status_code=404, detail="Vehicle not found")
@@ -176,8 +176,8 @@ def create_rental(rental: schema.RentalCreate, db: Session = Depends(get_db)):
     initial_cost = duration * vehicle.daily_rate
     
     db_rental = model.DBRental(
-        customer_id=customer.id,
-        vehicle_id=vehicle.id,
+        customer_id=customer.customer_id,
+        vehicle_id=vehicle.vehicle_id,
         start_date=rental.start_date,
         end_date=rental.end_date,
         status="active",
@@ -216,7 +216,7 @@ def complete_rental(rental_id: int, db: Session = Depends(get_db)):
     Returns:
         DBRental: L'objet location mis à jour avec le coût final et les pénalités.
     """
-    rental = db.query(model.DBRental).filter(model.DBRental.id == rental_id).first()
+    rental = db.query(model.DBRental).filter(model.DBRental.rental_id == rental_id).first()
     
     if not rental:
         raise HTTPException(status_code=404, detail="Rental not found")

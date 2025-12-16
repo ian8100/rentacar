@@ -70,7 +70,6 @@ class CustomerResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class RentalCreate(BaseModel):
     """
     Modèle d'entrée pour créer une réservation.

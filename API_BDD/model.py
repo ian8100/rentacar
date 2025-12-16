@@ -12,7 +12,7 @@ class DBVehicle(Base):
     Les attributs spécifiques à certains types sont définis comme 'nullable'.
 
     Attributes:
-        id (int): Clé primaire unique du véhicule.
+        vehicle_id (int): Clé primaire unique du véhicule.
         brand (str): Marque du véhicule.
         model (str): Modèle du véhicule.
         category (str): Catégorie du véhicule ('car', 'truck', 'bike', etc.).
@@ -26,7 +26,7 @@ class DBVehicle(Base):
     """
     __tablename__ = "vehicles"
 
-    id = Column(Integer, primary_key=True, index=True)
+    vehicle_id = Column(Integer, primary_key=True, index=True)
     brand = Column(String)
     model = Column(String)
     category = Column(String)
@@ -48,7 +48,7 @@ class DBCustomer(Base):
     des clients enregistrés.
 
     Attributes:
-        id (int): Clé primaire unique du client.
+        customer_id (int): Clé primaire unique du client.
         first_name (str): Prénom du client.
         last_name (str): Nom de famille du client.
         age (int): Âge du client (utilisé pour vérifier l'éligibilité).
@@ -57,7 +57,7 @@ class DBCustomer(Base):
     """
     __tablename__ = "customers"
 
-    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String)
     last_name = Column(String)
     age = Column(Integer)
@@ -73,7 +73,7 @@ class DBRental(Base):
     tout en stockant les détails temporels et financiers de la transaction.
 
     Attributes:
-        id (int): Clé primaire unique de la location.
+        rental_id (int): Clé primaire unique de la location.
         customer_id (int): Clé étrangère liant au client.
         vehicle_id (int): Clé étrangère liant au véhicule.
         start_date (datetime): Date de début de la location.
@@ -87,9 +87,9 @@ class DBRental(Base):
     """
     __tablename__ = "rentals"
 
-    id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"))
-    vehicle_id = Column(Integer, ForeignKey("vehicles.id"))
+    rental_id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, ForeignKey("customers.customer_id"))
+    vehicle_id = Column(Integer, ForeignKey("vehicles.vehicle_id"))
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     actual_return_date = Column(DateTime, nullable=True)
