@@ -27,7 +27,6 @@ class TestCarRentalSystem(unittest.TestCase):
         """
         self.system = CarRentalSystem()
 
-        # Normalisation de la date actuelle pour éviter des erreurs de microsecondes
         self.today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         self.future_date = self.today + timedelta(days=5)
         self.past_date = self.today - timedelta(days=5)
@@ -131,7 +130,6 @@ class TestCarRentalSystem(unittest.TestCase):
         self.system.schedule_vehicle_maintenance(car.vehicle_id, "Oil change", 2)
         self.assertEqual(car.state, Vehicule.MAINTENANCE)
 
-        # Note: Le message d'erreur original mentionne "rented", vérifiez si votre logique lève aussi une erreur pour "maintenance"
         with self.assertRaises(ValueError): 
             self.system.remove_vehicle(car.vehicle_id) 
 
@@ -171,7 +169,7 @@ class TestCarRentalSystem(unittest.TestCase):
         2. Client avec mauvais permis pour un camion.
         3. Client avec bon âge et bon permis pour un camion.
         """
-        young_customer = Customer(10, "Young", "One", 17, "B")
+        young_customer = Customer(10, "Young", "One", 14, "B")
         truck_customer = Customer(11, "Truck", "Driver", 25, "C") 
 
         car = self.system.add_vehicle("CarBrand", "Model", "car", 50.0)
@@ -221,7 +219,7 @@ class TestCarRentalSystem(unittest.TestCase):
         
         Vérifie que :
         - Le système empêche de créer une nouvelle location pour un véhicule
-          sur une période qui chevauche une location existante active.
+        sur une période qui chevauche une location existante active.
         """
         car = self.system.add_vehicle("V1", "M1", "car", 50.0)
         cust = self.system.add_customer("C1", "L1", 25, "B")

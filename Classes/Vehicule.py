@@ -80,10 +80,6 @@ class Vehicule(ABC):
     
     def __str__(self):
         """String representation of the vehicle."""
-        return f"{self.brand} {self.model} ({self.vehicle_id}) - {self.daily_rate}€/day - {self.state.value}"
-    
-    def __str__(self):
-        """String representation of the vehicle."""
         return f"{self.brand} {self.model} ({self.vehicle_id}) - {self.daily_rate}€/day - {self.state}"
     
     def __repr__(self):
@@ -94,7 +90,7 @@ class Vehicule(ABC):
 class Car(Vehicule):
     """Represents a car."""
     
-    MIN_AGE: int = 18
+    MIN_AGE: int = 17
     AVAILABLE: str = "available"
     RENTED: str = "rented"
     MAINTENANCE: str = "maintenance"
@@ -135,7 +131,7 @@ class Car(Vehicule):
 class Truck(Vehicule):
     """Represents a truck for commercial use."""
     
-    MIN_AGE: int = 21  # Trucks require higher age
+    MIN_AGE: int = 21  
     AVAILABLE: str = "available"
     RENTED: str = "rented"
     MAINTENANCE: str = "maintenance"
@@ -174,7 +170,7 @@ class Truck(Vehicule):
 class Motorcycle(Vehicule):
     """Represents a motorcycle."""
     
-    MIN_AGE: int = 18  # Motorcycles require 18+ but with valid license
+    MIN_AGE: int = 18 
     AVAILABLE: str = "available"
     RENTED: str = "rented"
     MAINTENANCE: str = "maintenance"
@@ -207,3 +203,50 @@ class Motorcycle(Vehicule):
     
     def __str__(self):
         """String representation."""
+        return f"Motorcycle: {super().__str__()} | {self.engine_cc}cc"
+
+if __name__ == "__main__":
+    print("🚗 Démarrage du test unitaire des classes Véhicule...\n")
+
+    try:
+        car = Car(1, "Fiat", "500", "car", 35.0, 2, "Essence")
+        truck = Truck(2, "Mercedes", "Actros", "truck", 120.0, 18.0)
+        moto = Motorcycle(3, "Kawasaki", "Ninja", "sport", 90.0, 1000)
+        
+        vehicles = [car, truck, moto]
+        
+        print("--- 1. Test d'Affichage (__str__) ---")
+        for v in vehicles:
+            print(f"✅ {v}")
+
+    except Exception as e:
+        print(f"❌ Erreur de création : {e}")
+
+    print("\n--- 2. Test Descriptions ---")
+    for v in vehicles:
+        print(f"ℹ️  {v.get_description()}")
+
+    print("\n--- 3. Test Éligibilité (Age) ---")
+    age_jeune = 19
+    print(f"Conducteur de {age_jeune} ans :")
+    print(f" - Peut louer Car (Min 17)? {'✅ OUI' if car.is_eligible_for_customer(age_jeune) else '❌ NON'}")
+    print(f" - Peut louer Truck (Min 21)? {'✅ OUI' if truck.is_eligible_for_customer(age_jeune) else '❌ NON'}")
+    print(f" - Peut louer Moto (Min 18)? {'✅ OUI' if moto.is_eligible_for_customer(age_jeune) else '❌ NON'}")
+
+    print("\n--- 4. Test Cycle Maintenance ---")
+    print(f"État initial Moto: {moto.state}")
+    print(">>> Envoi en maintenance...")
+    moto.schedule_maintenance("Vidange moteur", 1)
+    
+    if moto.state == Vehicule.MAINTENANCE and not moto.is_available():
+        print(f"✅ Moto bien passée en maintenance : {moto.state}")
+    else:
+        print(f"❌ Erreur état maintenance : {moto.state}")
+        
+    print(">>> Fin de maintenance...")
+    moto.complete_maintenance()
+    
+    if moto.is_available():
+        print(f"✅ Moto de nouveau disponible : {moto.state}")
+    else:
+        print(f"❌ Erreur fin maintenance : {moto.state}")

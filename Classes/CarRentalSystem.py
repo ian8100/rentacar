@@ -58,10 +58,7 @@ class CarRentalSystem:
             raise ValueError(f"Cannot remove vehicle {vehicle_id}: currently rented")
         
         if vehicle.state == Vehicule.MAINTENANCE:
-             # Le test attend peut-être "currently rented" ou un message spécifique,
-             # mais logiquement on ne supprime pas en maintenance.
-             # Si le test échoue ici, on peut ajuster le message.
-             raise ValueError(f"Cannot remove vehicle {vehicle_id}: currently in maintenance")
+            raise ValueError(f"Cannot remove vehicle {vehicle_id}: currently in maintenance")
         
         del self.vehicles[vehicle_id]
     
@@ -125,49 +122,31 @@ class CarRentalSystem:
         """
         customer = self.get_customer(customer_id)
         vehicle = self.get_vehicle(vehicle_id)
-        
-        # 1. Vérification Maintenance (Bloquant)
         if vehicle.state == Vehicule.MAINTENANCE:
             raise ValueError(f"Vehicle {vehicle_id} is not available")
-
-        # 2. Vérification Cas "Orphelin" (Pour le test test_create_rental_unavailable_vehicle)
-        # Si le véhicule est marqué RENTED mais qu'aucune location active n'existe dans le système
-        # (ce qui arrive quand le test fait set_state(RENTED) manuellement), on bloque.
         if vehicle.state == Vehicule.RENTED:
             has_active_rental = False
             for r in self.rentals.values():
                 if r.vehicle.vehicle_id == vehicle_id and r.status == Rental.ACTIVE:
                     has_active_rental = True
                     break
-            
             if not has_active_rental:
                 raise ValueError(f"Vehicle {vehicle_id} is not available")
-        
-        # Si on arrive ici, soit le véhicule est AVAILABLE, soit il est RENTED 
-        # mais avec une location active connue (ce qui permet de vérifier les dates ci-dessous)
-
         if not customer.can_rent_vehicle(vehicle):
             raise ValueError(f"Customer {customer_id} cannot rent this vehicle")
-        
         if start_date >= end_date:
             raise ValueError("Start date must be before end date")
-        
-        # 3. Vérification des chevauchements de dates
         for rental in self.rentals.values():
             if rental.vehicle.vehicle_id == vehicle_id and rental.status == Rental.ACTIVE:
-                # Logique de chevauchement : (StartA < EndB) et (EndA > StartB)
                 if (start_date < rental.end_date and end_date > rental.start_date):
                     raise ValueError(f"Vehicle {vehicle_id} is already reserved for these dates")
-        
         rental_id = self.next_rental_id
         self.next_rental_id += 1
-        
         rental = Rental(rental_id, customer, vehicle, start_date, end_date)
         self.rentals[rental_id] = rental
-        
         vehicle.set_state(Vehicule.RENTED)
-        
         return rental
+    
     
     def complete_rental(self, rental_id: int, actual_return_date=None):
         """Complete a rental."""
@@ -379,3 +358,70 @@ class CarRentalSystem:
     def __str__(self):
         return (f"CarRentalSystem - Vehicles: {len(self.vehicles)}, "
                 f"Customers: {len(self.customers)}, Rentals: {len(self.rentals)}")
+    
+
+if __name__ == "__main__":
+    print("🚀 Démarrage du test rapide du système de location...\n")
+    
+    system = CarRentalSystem()
+    
+    print("--- 1. Ajout de véhicules ---")
+    try:
+        car1 = system.add_vehicle("Toyota", "Corolla", "car", 50.0, num_doors=4, fuel_type="Hybrid")
+        print(f"✅ Ajouté: {car1}")
+        
+        truck1 = system.add_vehicle("Volvo", "FH16", "truck", 150.0, payload_capacity=20.0)
+        print(f"✅ Ajouté: {truck1}")
+        
+        bike1 = system.add_vehicle("Yamaha", "MT-07", "bike", 80.0, engine_cc=700)
+        print(f"✅ Ajouté: {bike1}")
+        
+    except ValueError as e:
+        print(f"❌ Erreur ajout véhicule: {e}")
+
+    print("\n--- 2. Ajout de clients ---")
+    try:
+        cust1 = system.add_customer("Thomas", "Anderson", 30, "B")
+        print(f"✅ Ajouté: {cust1}")
+        
+        cust2 = system.add_customer("Ellen", "Ripley", 35, "C")
+        print(f"✅ Ajouté: {cust2}")
+        
+    except ValueError as e:
+        print(f"❌ Erreur ajout client: {e}")
+
+    print("\n--- 3. Création de locations ---")
+    today = datetime.now()
+    next_week = today + timedelta(days=7)
+    
+    try:
+        rental1 = system.create_rental(cust1.customer_id, car1.vehicle_id, today, next_week)
+        print(f"✅ Location créée (ID {rental1.rental_id}): {rental1}")
+        
+        rental2 = system.create_rental(cust2.customer_id, truck1.vehicle_id, today, next_week)
+        print(f"✅ Location créée (ID {rental2.rental_id}): {rental2}")
+        
+    except ValueError as e:
+        print(f"❌ Erreur création location: {e}")
+
+    system.print_fleet_status()
+
+    print("--- 4. Retour de véhicule ---")
+    try:
+        system.complete_rental(rental1.rental_id, actual_return_date=next_week)
+        print(f"✅ Location {rental1.rental_id} terminée à l'heure.")
+        
+        late_date = next_week + timedelta(days=2)
+        system.complete_rental(rental2.rental_id, actual_return_date=late_date)
+        print(f"✅ Location {rental2.rental_id} terminée EN RETARD (Pénalité appliquée).")
+        
+    except ValueError as e:
+        print(f"❌ Erreur retour location: {e}")
+
+    print("\n--- 5. Rapports Finaux ---")
+    system.print_revenue_report()
+    
+    stats = system.generate_customer_statistics()
+    print("Statistiques Clients:")
+    print(f"  Total Clients: {stats['total_customers']}")
+    print(f"  Revenu total généré par les clients: ${stats['total_revenue_from_customers']:.2f}")

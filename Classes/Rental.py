@@ -3,13 +3,16 @@ Rental class for the car rental system.
 Manages rental transactions and their lifecycle.
 """
 from datetime import datetime, timedelta
-
+try:
+    from Vehicule import Car
+    from Customer import Customer
+except ImportError:
+    pass
 class Rental:
     """Represents a car rental transaction."""
     ACTIVE = "active"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
-    # CORRECTION 1 : Ajout de la constante manquante
     LATE_RETURN_PENALTY_PERCENT = 0.5
     
     def __init__(self, rental_id: int, customer, vehicle, start_date: datetime, end_date: datetime):
@@ -49,15 +52,12 @@ class Rental:
         
         if actual_return_date > self.end_date:
             late_days = (actual_return_date - self.end_date).days
-            # Utilisation de la constante définie plus haut
             daily_penalty = self.vehicle.daily_rate * self.LATE_RETURN_PENALTY_PERCENT
             self.late_return_penalty = daily_penalty * late_days
             self.total_cost += self.late_return_penalty
         
         self.vehicle.increment_rental_count()
         
-        # CORRECTION 2 : Correction de l'accès à la constante AVAILABLE
-        # Au lieu de passer par l'état (str), on passe par l'objet véhicule
         self.vehicle.set_state(self.vehicle.AVAILABLE)
         
         self.customer.add_rental_to_history(self)
@@ -110,3 +110,50 @@ class Rental:
     
     def __repr__(self):
         return (f"Rental({self.rental_id}, customer={self.customer.customer_id}, "f"vehicle={self.vehicle.vehicle_id}, status={self.status})")
+
+if __name__ == "__main__":
+    print("🚀 Démarrage du test unitaire de la classe Rental...\n")
+
+    try:
+        mock_car = Car(1, "Peugeot", "208", "car", 40.0, 4, "Essence")
+        mock_customer = Customer(1, "Alice", "Test", 25, "B")
+        print(f"✅ Objets créés: {mock_car} | {mock_customer}")
+
+        start = datetime.now()
+        duration_days = 5
+        end = start + timedelta(days=duration_days)
+
+        print(f"\n--- Test Création (Durée: {duration_days} jours) ---")
+        rental = Rental(101, mock_customer, mock_car, start, end)
+        print(f"Status initial: {rental.status}")
+        print(f"Coût initial attendu ({duration_days} * 40.0): {rental.total_cost}€")
+        
+        assert rental.total_cost == 200.0
+        print("✅ Calcul du coût initial correct.")
+
+        print("\n--- Test Extension (+2 jours) ---")
+        new_end = end + timedelta(days=2)
+        rental.extend_rental(new_end)
+        print(f"Nouvelle date de fin: {rental.end_date}")
+        print(f"Nouveau coût attendu (7 * 40.0): {rental.total_cost}€")
+        
+        assert rental.total_cost == 280.0
+        print("✅ Calcul après extension correct.")
+
+        print("\n--- Test Retour en retard (1 jour de retard) ---")
+        actual_return = new_end + timedelta(days=1)
+        
+        rental.complete_rental(actual_return)
+        
+        print(f"Pénalité calculée: {rental.late_return_penalty}€")
+        print(f"Coût final total: {rental.total_cost}€")
+        print(f"Status final: {rental.status}")
+
+        assert rental.late_return_penalty == 20.0
+        assert rental.total_cost == 300.0
+        print("✅ Calcul des pénalités correct.")
+
+    except ImportError:
+        print("❌ Impossible de lancer le test : Les fichiers Vehicule.py ou Customer.py sont introuvables.")
+    except Exception as e:
+        print(f"❌ Erreur durant le test: {e}")
